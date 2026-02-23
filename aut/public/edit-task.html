@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Tasks | Ship It 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
+      padding: 40px 20px;
+    }
+
+    .container { max-width: 800px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    header a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    header a:hover { color: #63b3ed; }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .task-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .task-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 22px 24px;
+      transition: border-color 0.2s;
+      animation: slideIn 0.3s ease;
+    }
+
+    .task-card.editing { border-color: #a78bfa; background: rgba(167,139,250,0.07); }
+
+    /* View mode */
+    .view-mode .task-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .view-mode .task-desc {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .view-mode .task-meta {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 16px;
+    }
+
+    /* Edit mode */
+    .edit-mode { display: none; }
+    .edit-mode label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .edit-mode input, .edit-mode textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .edit-mode input:focus, .edit-mode textarea:focus { border-color: #a78bfa; }
+    .edit-mode textarea { resize: vertical; min-height: 90px; }
+
+    .btn-row { display: flex; gap: 10px; }
+
+    button {
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-edit {
+      background: rgba(167,139,250,0.15);
+      color: #a78bfa;
+      border: 1px solid rgba(167,139,250,0.3);
+    }
+
+    .btn-edit:hover { background: rgba(167,139,250,0.28); }
+
+    .btn-save {
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      color: white;
+    }
+
+    .btn-save:hover { opacity: 0.85; }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-cancel {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.45);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-cancel:hover { background: rgba(255,255,255,0.12); }
+
+    .btn-delete {
+      background: rgba(239,68,68,0.12);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.3);
+      margin-left: auto;
+    }
+
+    .btn-delete:hover { background: rgba(239,68,68,0.25); }
+    .btn-delete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Confirm delete overlay */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-overlay.show { display: flex; }
+
+    .confirm-box {
+      background: #1e1b4b;
+      border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 16px;
+      padding: 32px 36px;
+      text-align: center;
+      max-width: 380px;
+      width: 100%;
+      animation: popIn 0.2s ease;
+    }
+
+    .confirm-box .confirm-icon { font-size: 2.4rem; margin-bottom: 12px; }
+    .confirm-box h3 { font-size: 1.2rem; margin-bottom: 8px; }
+    .confirm-box p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 24px; }
+
+    .confirm-box .confirm-name {
+      color: #f87171;
+      font-weight: 700;
+    }
+
+    .confirm-actions { display: flex; gap: 12px; }
+
+    .btn-confirm-delete {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: #dc2626;
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-confirm-delete:hover { opacity: 0.85; }
+
+    .btn-confirm-cancel {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.5);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-confirm-cancel:hover { background: rgba(255,255,255,0.12); }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state a { color: #a78bfa; text-decoration: none; }
+    .empty-state a:hover { text-decoration: underline; }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #065f46; color: #6ee7b7; border: 1px solid #34d399; }
+    .toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #f87171; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/main">&#8592; Back to Main</a>
+      <h1>✏️ Edit Tasks</h1>
+    </header>
+    <div class="task-list" id="taskList">
+      <div class="empty-state"><div class="icon">⏳</div><p>Loading...</p></div>
+    </div>
+  </div>
+
+  <!-- Confirm delete dialog -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div class="confirm-icon">🗑️</div>
+      <h3>Delete Task?</h3>
+      <p>You are about to delete <span class="confirm-name" id="confirmName"></span>. This cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancel</button>
+        <button class="btn-confirm-delete" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let tasks = [];
+
+    function formatDate(iso) { return new Date(iso).toLocaleString(); }
+
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      if (tasks.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>No tasks yet. <a href="/main/new-task">Create one →</a></p>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = tasks.map((t, i) => `
+        <div class="task-card" id="card-${t.id}">
+          <!-- View -->
+          <div class="view-mode" id="view-${t.id}">
+            <div class="task-name">${escHtml(t.name)}</div>
+            <div class="task-desc">${escHtml(t.description)}</div>
+            <div class="task-meta">Updated: ${formatDate(t.updatedAt)}</div>
+            <div class="btn-row">
+              <button class="btn-edit" onclick="startEdit(${t.id})">✏️ Edit</button>
+              <button class="btn-delete" onclick="confirmDelete(${t.id}, '${escAttr(t.name)}')">🗑️ Delete</button>
+            </div>
+          </div>
+          <!-- Edit -->
+          <div class="edit-mode" id="edit-${t.id}">
+            <label>Task Name</label>
+            <input type="text" id="name-${t.id}" value="${escAttr(t.name)}" maxlength="80"/>
+            <label>Description</label>
+            <textarea id="desc-${t.id}" maxlength="500">${escHtml(t.description)}</textarea>
+            <div class="btn-row">
+              <button class="btn-save" id="save-${t.id}" onclick="saveTask(${t.id})">💾 Save</button>
+              <button class="btn-cancel" onclick="cancelEdit(${t.id})">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function escAttr(str) {
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    function startEdit(id) {
+      const card = document.getElementById(`card-${id}`);
+      card.classList.add('editing');
+      document.getElementById(`view-${id}`).style.display = 'none';
+      document.getElementById(`edit-${id}`).style.display = 'block';
+      document.getElementById(`name-${id}`).focus();
+    }
+
+    function cancelEdit(id) {
+      const card = document.getElementById(`card-${id}`);
+      card.classList.remove('editing');
+      document.getElementById(`view-${id}`).style.display = 'block';
+      document.getElementById(`edit-${id}`).style.display = 'none';
+    }
+
+    async function saveTask(id) {
+      const name = document.getElementById(`name-${id}`).value.trim();
+      const description = document.getElementById(`desc-${id}`).value.trim();
+      if (!name) return showToast('⚠️ Name is required', 'error');
+      if (!description) return showToast('⚠️ Description is required', 'error');
+
+      const btn = document.getElementById(`save-${id}`);
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`/api/tasks/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description }),
+        });
+        if (!res.ok) throw new Error();
+        const updated = await res.json();
+        const idx = tasks.findIndex(t => t.id === id);
+        if (idx !== -1) tasks[idx] = updated;
+        renderTasks();
+        showToast('✅ Task saved!', 'success');
+      } catch {
+        showToast('❌ Failed to save task', 'error');
+        btn.disabled = false;
+        btn.textContent = '💾 Save';
+      }
+    }
+
+    let pendingDeleteId = null;
+
+    function confirmDelete(id, name) {
+      pendingDeleteId = id;
+      document.getElementById('confirmName').textContent = `"${name}"`;
+      document.getElementById('confirmOverlay').classList.add('show');
+    }
+
+    function closeConfirm() {
+      pendingDeleteId = null;
+      document.getElementById('confirmOverlay').classList.remove('show');
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+      if (!pendingDeleteId) return;
+      const id = pendingDeleteId;
+      closeConfirm();
+
+      try {
+        const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        tasks = tasks.filter(t => t.id !== id);
+        renderTasks();
+        showToast('🗑️ Task deleted', 'success');
+      } catch {
+        showToast('❌ Failed to delete task', 'error');
+      }
+    });
+
+    // Close overlay on backdrop click
+    document.getElementById('confirmOverlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeConfirm();
+    });
+
+    async function load() {
+      try {
+        const res = await fetch('/api/tasks');
+        tasks = await res.json();
+        renderTasks();
+      } catch {
+        document.getElementById('taskList').innerHTML =
+          `<div class="empty-state"><div class="icon">❌</div><p>Failed to load tasks.</p></div>`;
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

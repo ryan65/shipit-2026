@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ship It 2026</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .container {
+      text-align: center;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    /* SVG Rocket Logo */
+    .logo {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 30px;
+      filter: drop-shadow(0 0 24px rgba(99, 179, 237, 0.7));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .title {
+      font-size: 4rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa, #f687b3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+
+    .divider {
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa);
+      margin: 20px auto;
+      border-radius: 2px;
+    }
+
+    /* Stars background */
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--duration) ease-in-out infinite;
+      opacity: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-16px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50%       { opacity: 1; }
+    }
+
+    /* Navigation cards */
+    .nav-cards {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 22px 28px;
+      width: 160px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      text-decoration: none;
+      color: #e2e8f0;
+      backdrop-filter: blur(8px);
+      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-6px);
+      border-color: #a78bfa;
+      background: rgba(167,139,250,0.1);
+    }
+
+    .nav-card .nav-icon { font-size: 2rem; }
+
+    .nav-card .nav-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Star field -->
+  <div class="stars" id="stars"></div>
+
+  <div class="container">
+    <!-- Inline SVG Rocket Logo -->
+    <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rocket body -->
+      <path d="M50 5 C30 25, 28 50, 30 70 L50 78 L70 70 C72 50, 70 25, 50 5Z"
+            fill="url(#bodyGrad)" />
+      <!-- Window -->
+      <circle cx="50" cy="42" r="9" fill="url(#windowGrad)" />
+      <circle cx="50" cy="42" r="6" fill="#1a1a2e" opacity="0.6"/>
+      <!-- Left fin -->
+      <path d="M30 70 L18 88 L38 78Z" fill="url(#finGrad)" />
+      <!-- Right fin -->
+      <path d="M70 70 L82 88 L62 78Z" fill="url(#finGrad)" />
+      <!-- Flame -->
+      <ellipse cx="50" cy="82" rx="8" ry="12" fill="url(#flameGrad)" opacity="0.9"/>
+      <ellipse cx="50" cy="84" rx="4" ry="7"  fill="#fff" opacity="0.6"/>
+
+      <defs>
+        <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#63b3ed"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+        <radialGradient id="windowGrad" cx="40%" cy="35%">
+          <stop offset="0%"   stop-color="#e0f2fe"/>
+          <stop offset="100%" stop-color="#3b82f6"/>
+        </radialGradient>
+        <linearGradient id="finGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#a78bfa"/>
+          <stop offset="100%" stop-color="#f687b3"/>
+        </linearGradient>
+        <linearGradient id="flameGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#fbbf24"/>
+          <stop offset="100%" stop-color="#ef4444"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <h1 class="title">Ship It 2026</h1>
+    <div class="divider"></div>
+    <p class="subtitle">Launch fast &bull; Iterate faster</p>
+
+    <nav class="nav-cards">
+      <a href="/main/history" class="nav-card">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">History</span>
+      </a>
+      <a href="/main/new-task" class="nav-card">
+        <span class="nav-icon">➕</span>
+        <span class="nav-label">New Task</span>
+      </a>
+      <a href="/main/edit-task" class="nav-card">
+        <span class="nav-icon">✏️</span>
+        <span class="nav-label">Edit Tasks</span>
+      </a>
+      <a href="/main/logs" class="nav-card">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">Logs</span>
+      </a>
+      <a href="/main/api-examples" class="nav-card">
+        <span class="nav-icon">🔌</span>
+        <span class="nav-label">API</span>
+      </a>
+    </nav>
+  </div>
+
+  <script>
+    // Generate random stars
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 120; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      const size = Math.random() * 2.5 + 0.5;
+      star.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        top: ${Math.random() * 100}%;
+        left: ${Math.random() * 100}%;
+        --duration: ${Math.random() * 3 + 2}s;
+        animation-delay: ${Math.random() * 4}s;
+      `;
+      container.appendChild(star);
+    }
+  </script>
+</body>
+</html>

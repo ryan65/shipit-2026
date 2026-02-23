@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New Task | Ship It 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .container { width: 100%; max-width: 560px; }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    header a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    header a:hover { color: #63b3ed; }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 36px;
+      backdrop-filter: blur(10px);
+      animation: fadeUp 0.4s ease;
+    }
+
+    .form-group { margin-bottom: 24px; }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: #e2e8f0;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.15);
+    }
+
+    input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.25); }
+
+    textarea { resize: vertical; min-height: 130px; }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 4px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-submit {
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      color: white;
+    }
+
+    .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-clear {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .btn-clear:hover { background: rgba(255,255,255,0.12); }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #065f46; color: #6ee7b7; border: 1px solid #34d399; }
+    .toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #f87171; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/main">&#8592; Back to Main</a>
+      <h1>➕ New Task</h1>
+    </header>
+
+    <div class="card">
+      <form id="taskForm" novalidate>
+        <div class="form-group">
+          <label for="taskName">Task Name</label>
+          <input type="text" id="taskName" placeholder="e.g. Fix login bug" maxlength="80" autocomplete="off"/>
+          <div class="char-count"><span id="nameCount">0</span> / 80</div>
+        </div>
+
+        <div class="form-group">
+          <label for="taskDesc">Description</label>
+          <textarea id="taskDesc" placeholder="Describe the task in detail..." maxlength="500"></textarea>
+          <div class="char-count"><span id="descCount">0</span> / 500</div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn-clear" id="clearBtn">Clear</button>
+          <button type="submit" class="btn-submit" id="submitBtn">🚀 Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const nameInput = document.getElementById('taskName');
+    const descInput = document.getElementById('taskDesc');
+    const nameCount = document.getElementById('nameCount');
+    const descCount = document.getElementById('descCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const toast    = document.getElementById('toast');
+
+    nameInput.addEventListener('input', () => nameCount.textContent = nameInput.value.length);
+    descInput.addEventListener('input', () => descCount.textContent = descInput.value.length);
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      nameInput.value = '';
+      descInput.value = '';
+      nameCount.textContent = '0';
+      descCount.textContent = '0';
+    });
+
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.className = 'toast', 3000);
+    }
+
+    document.getElementById('taskForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const description = descInput.value.trim();
+
+      if (!name) return showToast('⚠️ Task name is required', 'error');
+      if (!description) return showToast('⚠️ Description is required', 'error');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description }),
+        });
+
+        if (!res.ok) throw new Error('Server error');
+        showToast('✅ Task added successfully!', 'success');
+        nameInput.value = '';
+        descInput.value = '';
+        nameCount.textContent = '0';
+        descCount.textContent = '0';
+      } catch (err) {
+        showToast('❌ Failed to add task', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Add Task';
+      }
+    });
+  </script>
+</body>
+</html>

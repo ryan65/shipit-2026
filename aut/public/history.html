@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task History | Ship It 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
+      padding: 40px 20px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    header a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    header a:hover { color: #63b3ed; }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .container { max-width: 800px; margin: 0 auto; }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px 24px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-card .num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #a78bfa;
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar:focus { border-color: #a78bfa; }
+    .search-bar::placeholder { color: rgba(255,255,255,0.3); }
+
+    .task-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .task-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 20px 24px;
+      transition: border-color 0.2s, transform 0.2s;
+      animation: slideIn 0.3s ease;
+    }
+
+    .task-card:hover {
+      border-color: #a78bfa;
+      transform: translateY(-2px);
+    }
+
+    .task-card .task-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+
+    .task-card .task-desc {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .task-card .task-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .task-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 1rem; }
+    .empty-state a { color: #a78bfa; text-decoration: none; }
+    .empty-state a:hover { text-decoration: underline; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/main">&#8592; Back to Main</a>
+      <h1>📋 Task History</h1>
+    </header>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="num" id="totalCount">0</div>
+        <div class="label">Total Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="todayCount">0</div>
+        <div class="label">Added Today</div>
+      </div>
+    </div>
+
+    <input class="search-bar" id="searchInput" type="text" placeholder="🔍  Search tasks by name or description..."/>
+
+    <div class="task-list" id="taskList">
+      <div class="empty-state">
+        <div class="icon">⏳</div>
+        <p>Loading tasks...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allTasks = [];
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString();
+    }
+
+    function isToday(iso) {
+      const d = new Date(iso);
+      const now = new Date();
+      return d.toDateString() === now.toDateString();
+    }
+
+    function render(tasks) {
+      const list = document.getElementById('taskList');
+      if (tasks.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>No tasks found. <a href="/main/new-task">Add your first task →</a></p>
+          </div>`;
+        return;
+      }
+      list.innerHTML = tasks.slice().reverse().map(t => `
+        <div class="task-card">
+          <div class="task-name">${t.name}</div>
+          <div class="task-desc">${t.description}</div>
+          <div class="task-meta">
+            <span>🕐 Created: ${formatDate(t.createdAt)}</span>
+            <span>✏️ Updated: ${formatDate(t.updatedAt)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function load() {
+      try {
+        const res = await fetch('/api/tasks');
+        allTasks = await res.json();
+        document.getElementById('totalCount').textContent = allTasks.length;
+        document.getElementById('todayCount').textContent = allTasks.filter(t => isToday(t.createdAt)).length;
+        render(allTasks);
+      } catch (e) {
+        document.getElementById('taskList').innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Failed to load tasks.</p></div>`;
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      render(allTasks.filter(t => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q)));
+    });
+
+    load();
+  </script>
+</body>
+</html>

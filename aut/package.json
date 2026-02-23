@@ -1,0 +1,16 @@
+{
+  "name": "shipit-2026",
+  "version": "1.0.0",
+  "description": "Ship It 2026 — task management web app with Express and Winston logging",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "winston": "^3.19.0"
+  }
+}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Examples | Ship It 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
+      padding: 40px 20px;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    header a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    header a:hover { color: #63b3ed; }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #a78bfa;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(167,139,250,0.2);
+    }
+
+    .example {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .example-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .example-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .method {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-right: 10px;
+    }
+
+    .GET    { background: rgba(74,222,128,0.15);  color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .POST   { background: rgba(99,179,237,0.15);  color: #63b3ed; border: 1px solid rgba(99,179,237,0.3); }
+    .PUT    { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .DELETE { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+
+    .copy-btn {
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(167,139,250,0.3);
+      background: rgba(167,139,250,0.1);
+      color: #a78bfa;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { background: rgba(167,139,250,0.22); }
+    .copy-btn.copied { background: rgba(74,222,128,0.2); color: #4ade80; border-color: rgba(74,222,128,0.4); }
+
+    .example-body {
+      padding: 14px 16px;
+    }
+
+    pre {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/main">&#8592; Back to Main</a>
+      <h1>🔌 API Examples</h1>
+    </header>
+
+    <!-- TASKS -->
+    <div class="section">
+      <div class="section-title">Tasks</div>
+
+      <div class="example">
+        <div class="example-header">
+          <div><span class="method GET">GET</span><span class="example-label">Get all tasks</span></div>
+          <button class="copy-btn" onclick="copy(this, 'curl http://localhost:3000/api/tasks')">Copy</button>
+        </div>
+        <div class="example-body">
+          <pre>curl http://localhost:3000/api/tasks</pre>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <div><span class="method POST">POST</span><span class="example-label">Add a new task</span></div>
+          <button class="copy-btn" onclick="copy(this, 'curl -X POST http://localhost:3000/api/tasks -H &quot;Content-Type: application/json&quot; -d &quot;{\&quot;name\&quot;:\&quot;My Task\&quot;,\&quot;description\&quot;:\&quot;Task description\&quot;}&quot;')">Copy</button>
+        </div>
+        <div class="example-body">
+          <pre>curl -X POST http://localhost:3000/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My Task","description":"Task description"}'</pre>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <div><span class="method PUT">PUT</span><span class="example-label">Edit a task (replace :id with actual task ID)</span></div>
+          <button class="copy-btn" onclick="copy(this, 'curl -X PUT http://localhost:3000/api/tasks/:id -H &quot;Content-Type: application/json&quot; -d &quot;{\&quot;name\&quot;:\&quot;Updated Name\&quot;,\&quot;description\&quot;:\&quot;Updated description\&quot;}&quot;')">Copy</button>
+        </div>
+        <div class="example-body">
+          <pre>curl -X PUT http://localhost:3000/api/tasks/:id \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Updated Name","description":"Updated description"}'</pre>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <div><span class="method DELETE">DELETE</span><span class="example-label">Delete a task (replace :id with actual task ID)</span></div>
+          <button class="copy-btn" onclick="copy(this, 'curl -X DELETE http://localhost:3000/api/tasks/:id')">Copy</button>
+        </div>
+        <div class="example-body">
+          <pre>curl -X DELETE http://localhost:3000/api/tasks/:id</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="section">
+      <div class="section-title">Logs</div>
+
+      <div class="example">
+        <div class="example-header">
+          <div><span class="method GET">GET</span><span class="example-label">Get all logs as JSON</span></div>
+          <button class="copy-btn" onclick="copy(this, 'curl http://localhost:3000/api/logs')">Copy</button>
+        </div>
+        <div class="example-body">
+          <pre>curl http://localhost:3000/api/logs</pre>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <div><span class="method GET">GET</span><span class="example-label">Get raw log file as plain text</span></div>
+          <button class="copy-btn" onclick="copy(this, 'curl http://localhost:3000/api/logs/raw')">Copy</button>
+        </div>
+        <div class="example-body">
+          <pre>curl http://localhost:3000/api/logs/raw</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function copy(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

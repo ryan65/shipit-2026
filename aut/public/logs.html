@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Logs | Ship It 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
+      padding: 40px 20px;
+    }
+
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    header a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    header a:hover { color: #63b3ed; }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #63b3ed, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-actions { margin-left: auto; display: flex; gap: 10px; }
+
+    .refresh-btn {
+      padding: 6px 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(99,179,237,0.4);
+      background: rgba(99,179,237,0.1);
+      color: #63b3ed;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: rgba(99,179,237,0.22); border-color: rgba(99,179,237,0.7); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .clear-btn {
+      padding: 6px 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(248,113,113,0.4);
+      background: rgba(248,113,113,0.1);
+      color: #f87171;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .clear-btn:hover { background: rgba(248,113,113,0.22); border-color: rgba(248,113,113,0.7); }
+    .clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    pre {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #cbd5e1;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px;
+      color: rgba(255,255,255,0.3);
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/main">&#8592; Back to Main</a>
+      <h1>📄 Logs</h1>
+      <div class="header-actions">
+        <button class="refresh-btn" id="refreshBtn" onclick="refresh()">🔄 Refresh</button>
+        <button class="clear-btn" id="clearBtn" onclick="clearLogs()">🗑 Clear Logs</button>
+      </div>
+    </header>
+    <div id="output"><div class="empty">Loading...</div></div>
+  </div>
+
+  <script>
+    async function load() {
+      try {
+        const res = await fetch('/api/logs/raw');
+        const text = await res.text();
+        const output = document.getElementById('output');
+        if (!text.trim()) {
+          output.innerHTML = '<div class="empty">No logs yet.</div>';
+        } else {
+          output.innerHTML = '<pre>' + text + '</pre>';
+        }
+      } catch (e) {
+        document.getElementById('output').innerHTML = '<div class="empty">Failed to load logs.</div>';
+      }
+    }
+
+    async function refresh() {
+      const btn = document.getElementById('refreshBtn');
+      btn.disabled = true;
+      await load();
+      btn.disabled = false;
+    }
+
+    async function clearLogs() {
+      if (!confirm('Clear all logs? This cannot be undone.')) return;
+      const btn = document.getElementById('clearBtn');
+      btn.disabled = true;
+      btn.textContent = 'Clearing...';
+      try {
+        await fetch('/api/logs', { method: 'DELETE' });
+        await load();
+      } catch (e) {
+        alert('Failed to clear logs.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🗑 Clear Logs';
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

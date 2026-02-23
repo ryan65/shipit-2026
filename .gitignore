@@ -1,0 +1,21 @@
+# Dependencies
+aut/node_modules/
+
+# Logs (runtime-generated)
+aut/logs/
+
+# Runtime data
+aut/data/tasks.json
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+*.iml
+.vscode/
