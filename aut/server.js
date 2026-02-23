@@ -7,6 +7,15 @@ const app = express();
 const port = 3000;
 const TASKS_FILE = path.join(__dirname, 'data', 'tasks.json');
 
+// Ensure data directory and tasks file exist on startup
+if (!fs.existsSync(path.join(__dirname, 'data'))) {
+  fs.mkdirSync(path.join(__dirname, 'data'));
+}
+if (!fs.existsSync(TASKS_FILE)) {
+  fs.writeFileSync(TASKS_FILE, '[]');
+  logger.info('Created empty tasks.json');
+}
+
 // Helpers
 function readTasks() {
   const raw = fs.readFileSync(TASKS_FILE, 'utf-8');
