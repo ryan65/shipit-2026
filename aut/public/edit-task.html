@@ -43,7 +43,24 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      flex: 1;
     }
+
+    .btn-delete-all {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(239,68,68,0.35);
+      background: rgba(239,68,68,0.1);
+      color: #f87171;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-delete-all:hover { background: rgba(239,68,68,0.22); border-color: #f87171; }
+    .btn-delete-all:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .task-list { display: flex; flex-direction: column; gap: 16px; }
 
@@ -153,7 +170,7 @@
     .btn-delete:hover { background: rgba(239,68,68,0.25); }
     .btn-delete:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Confirm delete overlay */
+    /* Confirm overlays */
     .confirm-overlay {
       display: none;
       position: fixed;
@@ -173,19 +190,16 @@
       border-radius: 16px;
       padding: 32px 36px;
       text-align: center;
-      max-width: 380px;
+      max-width: 400px;
       width: 100%;
       animation: popIn 0.2s ease;
     }
 
     .confirm-box .confirm-icon { font-size: 2.4rem; margin-bottom: 12px; }
     .confirm-box h3 { font-size: 1.2rem; margin-bottom: 8px; }
-    .confirm-box p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 24px; }
-
-    .confirm-box .confirm-name {
-      color: #f87171;
-      font-weight: 700;
-    }
+    .confirm-box p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5; }
+    .confirm-box .confirm-name { color: #f87171; font-weight: 700; }
+    .confirm-box .confirm-count { color: #f87171; font-weight: 800; font-size: 1.1rem; }
 
     .confirm-actions { display: flex; gap: 12px; }
 
@@ -264,13 +278,14 @@
     <header>
       <a href="/main">&#8592; Back to Main</a>
       <h1>✏️ Edit Tasks</h1>
+      <button class="btn-delete-all" id="deleteAllBtn" onclick="confirmDeleteAll()">🗑️ Delete All Tasks</button>
     </header>
     <div class="task-list" id="taskList">
       <div class="empty-state"><div class="icon">⏳</div><p>Loading...</p></div>
     </div>
   </div>
 
-  <!-- Confirm delete dialog -->
+  <!-- Single task confirm delete dialog -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
       <div class="confirm-icon">🗑️</div>
@@ -279,6 +294,19 @@
       <div class="confirm-actions">
         <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancel</button>
         <button class="btn-confirm-delete" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete ALL tasks confirm dialog -->
+  <div class="confirm-overlay" id="confirmAllOverlay">
+    <div class="confirm-box">
+      <div class="confirm-icon">⚠️</div>
+      <h3>Delete All Tasks?</h3>
+      <p>You are about to permanently delete <span class="confirm-count" id="confirmAllCount">0</span> tasks. This cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn-confirm-cancel" onclick="closeConfirmAll()">Cancel</button>
+        <button class="btn-confirm-delete" id="confirmDeleteAllBtn">Delete All</button>
       </div>
     </div>
   </div>
@@ -299,7 +327,10 @@
 
     function renderTasks() {
       const list = document.getElementById('taskList');
+      const deleteAllBtn = document.getElementById('deleteAllBtn');
+
       if (tasks.length === 0) {
+        deleteAllBtn.disabled = true;
         list.innerHTML = `
           <div class="empty-state">
             <div class="icon">📭</div>
@@ -308,6 +339,7 @@
         return;
       }
 
+      deleteAllBtn.disabled = false;
       list.innerHTML = tasks.map((t, i) => `
         <div class="task-card" id="card-${t.id}">
           <!-- View -->
@@ -387,6 +419,7 @@
       }
     }
 
+    // ── Single delete ──────────────────────────────────────
     let pendingDeleteId = null;
 
     function confirmDelete(id, name) {
@@ -404,7 +437,6 @@
       if (!pendingDeleteId) return;
       const id = pendingDeleteId;
       closeConfirm();
-
       try {
         const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error();
@@ -416,11 +448,44 @@
       }
     });
 
-    // Close overlay on backdrop click
     document.getElementById('confirmOverlay').addEventListener('click', e => {
       if (e.target === e.currentTarget) closeConfirm();
     });
 
+    // ── Delete all ─────────────────────────────────────────
+    function confirmDeleteAll() {
+      document.getElementById('confirmAllCount').textContent = tasks.length;
+      document.getElementById('confirmAllOverlay').classList.add('show');
+    }
+
+    function closeConfirmAll() {
+      document.getElementById('confirmAllOverlay').classList.remove('show');
+    }
+
+    document.getElementById('confirmDeleteAllBtn').addEventListener('click', async () => {
+      closeConfirmAll();
+      const btn = document.getElementById('deleteAllBtn');
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+      try {
+        const res = await fetch('/api/tasks', { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        tasks = [];
+        renderTasks();
+        showToast(`🗑️ Deleted ${data.deleted} tasks`, 'success');
+      } catch {
+        showToast('❌ Failed to delete all tasks', 'error');
+        btn.disabled = false;
+        btn.textContent = '🗑️ Delete All Tasks';
+      }
+    });
+
+    document.getElementById('confirmAllOverlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeConfirmAll();
+    });
+
+    // ── Load ───────────────────────────────────────────────
     async function load() {
       try {
         const res = await fetch('/api/tasks');
