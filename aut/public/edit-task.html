@@ -21,7 +21,7 @@
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-bottom: 36px;
+      margin-bottom: 20px;
     }
 
     header a {
@@ -62,6 +62,36 @@
     .btn-delete-all:hover { background: rgba(239,68,68,0.22); border-color: #f87171; }
     .btn-delete-all:disabled { opacity: 0.35; cursor: not-allowed; }
 
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .task-count {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .btn-sort {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-sort:hover { border-color: #a78bfa; color: #e2e8f0; background: rgba(167,139,250,0.1); }
+
     .task-list { display: flex; flex-direction: column; gap: 16px; }
 
     .task-card {
@@ -75,7 +105,6 @@
 
     .task-card.editing { border-color: #a78bfa; background: rgba(167,139,250,0.07); }
 
-    /* View mode */
     .view-mode .task-name {
       font-size: 1.1rem;
       font-weight: 700;
@@ -95,7 +124,6 @@
       margin-bottom: 16px;
     }
 
-    /* Edit mode */
     .edit-mode { display: none; }
     .edit-mode label {
       display: block;
@@ -280,6 +308,15 @@
       <h1>✏️ Edit Tasks</h1>
       <button class="btn-delete-all" id="deleteAllBtn" onclick="confirmDeleteAll()">🗑️ Delete All Tasks</button>
     </header>
+
+    <div class="toolbar">
+      <span class="task-count" id="taskCount"></span>
+      <button class="btn-sort" id="sortBtn" onclick="toggleSort()">
+        <span id="sortIcon">↓</span>
+        <span id="sortLabel">Latest first</span>
+      </button>
+    </div>
+
     <div class="task-list" id="taskList">
       <div class="empty-state"><div class="icon">⏳</div><p>Loading...</p></div>
     </div>
@@ -315,6 +352,7 @@
 
   <script>
     let tasks = [];
+    let sortOrder = 'desc'; // 'desc' = latest first, 'asc' = oldest first
 
     function formatDate(iso) { return new Date(iso).toLocaleString(); }
 
@@ -325,12 +363,28 @@
       setTimeout(() => t.className = 'toast', 3000);
     }
 
+    function getSortedTasks() {
+      return tasks.slice().sort((a, b) => {
+        const diff = new Date(a.createdAt) - new Date(b.createdAt);
+        return sortOrder === 'desc' ? -diff : diff;
+      });
+    }
+
+    function toggleSort() {
+      sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+      document.getElementById('sortIcon').textContent  = sortOrder === 'desc' ? '↓' : '↑';
+      document.getElementById('sortLabel').textContent = sortOrder === 'desc' ? 'Latest first' : 'Oldest first';
+      renderTasks();
+    }
+
     function renderTasks() {
       const list = document.getElementById('taskList');
       const deleteAllBtn = document.getElementById('deleteAllBtn');
+      const taskCount = document.getElementById('taskCount');
 
       if (tasks.length === 0) {
         deleteAllBtn.disabled = true;
+        taskCount.textContent = '';
         list.innerHTML = `
           <div class="empty-state">
             <div class="icon">📭</div>
@@ -340,13 +394,16 @@
       }
 
       deleteAllBtn.disabled = false;
-      list.innerHTML = tasks.map((t, i) => `
+      taskCount.textContent = `${tasks.length} task${tasks.length !== 1 ? 's' : ''}`;
+
+      const sorted = getSortedTasks();
+      list.innerHTML = sorted.map(t => `
         <div class="task-card" id="card-${t.id}">
           <!-- View -->
           <div class="view-mode" id="view-${t.id}">
             <div class="task-name">${escHtml(t.name)}</div>
             <div class="task-desc">${escHtml(t.description)}</div>
-            <div class="task-meta">Updated: ${formatDate(t.updatedAt)}</div>
+            <div class="task-meta">Created: ${formatDate(t.createdAt)} &nbsp;·&nbsp; Updated: ${formatDate(t.updatedAt)}</div>
             <div class="btn-row">
               <button class="btn-edit" onclick="startEdit(${t.id})">✏️ Edit</button>
               <button class="btn-delete" onclick="confirmDelete(${t.id}, '${escAttr(t.name)}')">🗑️ Delete</button>
