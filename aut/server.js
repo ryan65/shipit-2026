@@ -216,6 +216,36 @@ app.post('/api/tasks', (req, res) => {
   }
 });
 
+// DELETE all tasks
+app.delete('/api/tasks', (req, res) => {
+  try {
+    const tasks = readTasks();
+    if (tasks.length === 0) {
+      return res.json({ message: 'No tasks to delete', deleted: 0 });
+    }
+    // Write all DELETED history entries in one go
+    const history = readHistory();
+    const now = new Date().toISOString();
+    tasks.forEach((task, i) => {
+      history.push({
+        id: Date.now() + i,
+        action: 'DELETED',
+        taskId: task.id,
+        taskName: task.name,
+        taskDescription: task.description,
+        timestamp: now,
+      });
+    });
+    writeHistory(history);
+    writeTasks([]);
+    logger.info(`[ALL TASKS DELETED] count=${tasks.length}`);
+    res.json({ message: `Deleted ${tasks.length} tasks`, deleted: tasks.length });
+  } catch (err) {
+    logger.error(`Failed to delete all tasks: ${err.message}`);
+    res.status(500).json({ error: 'Failed to delete all tasks' });
+  }
+});
+
 // PUT update task
 app.put('/api/tasks/:id', (req, res) => {
   try {
