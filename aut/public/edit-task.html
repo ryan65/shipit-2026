@@ -75,7 +75,12 @@
       color: rgba(255,255,255,0.35);
     }
 
-    .btn-sort {
+    .toolbar-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sort, .btn-refresh {
       padding: 8px 16px;
       border-radius: 8px;
       border: 1px solid rgba(255,255,255,0.15);
@@ -90,7 +95,12 @@
       gap: 6px;
     }
 
-    .btn-sort:hover { border-color: #a78bfa; color: #e2e8f0; background: rgba(167,139,250,0.1); }
+    .btn-sort:hover  { border-color: #a78bfa; color: #e2e8f0; background: rgba(167,139,250,0.1); }
+    .btn-refresh:hover { border-color: #63b3ed; color: #63b3ed; background: rgba(99,179,237,0.1); }
+    .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { display: inline-block; animation: spin 0.7s linear infinite; }
 
     .task-list { display: flex; flex-direction: column; gap: 16px; }
 
@@ -311,10 +321,15 @@
 
     <div class="toolbar">
       <span class="task-count" id="taskCount"></span>
-      <button class="btn-sort" id="sortBtn" onclick="toggleSort()">
-        <span id="sortIcon">↓</span>
-        <span id="sortLabel">Latest first</span>
-      </button>
+      <div class="toolbar-right">
+        <button class="btn-refresh" id="refreshBtn" onclick="refreshTasks()">
+          <span id="refreshIcon">🔄</span> Refresh
+        </button>
+        <button class="btn-sort" id="sortBtn" onclick="toggleSort()">
+          <span id="sortIcon">↓</span>
+          <span id="sortLabel">Latest first</span>
+        </button>
+      </div>
     </div>
 
     <div class="task-list" id="taskList">
@@ -473,6 +488,26 @@
         showToast('❌ Failed to save task', 'error');
         btn.disabled = false;
         btn.textContent = '💾 Save';
+      }
+    }
+
+    // ── Refresh ────────────────────────────────────────────
+    async function refreshTasks() {
+      const btn  = document.getElementById('refreshBtn');
+      const icon = document.getElementById('refreshIcon');
+      btn.disabled = true;
+      icon.classList.add('spinning');
+      try {
+        const res = await fetch('/api/tasks');
+        if (!res.ok) throw new Error();
+        tasks = await res.json();
+        renderTasks();
+        showToast('✅ Tasks refreshed', 'success');
+      } catch {
+        showToast('❌ Failed to refresh', 'error');
+      } finally {
+        btn.disabled = false;
+        icon.classList.remove('spinning');
       }
     }
 
