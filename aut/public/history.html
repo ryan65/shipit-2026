@@ -41,7 +41,30 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      flex: 1;
     }
+
+    .btn-refresh {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(99,179,237,0.3);
+      background: rgba(99,179,237,0.08);
+      color: #63b3ed;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-refresh:hover { background: rgba(99,179,237,0.18); border-color: #63b3ed; }
+    .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { display: inline-block; animation: spin 0.7s linear infinite; }
 
     .container { max-width: 860px; margin: 0 auto; }
 
@@ -206,6 +229,25 @@
     .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
     .empty-state p { font-size: 1rem; }
 
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #065f46; color: #6ee7b7; border: 1px solid #34d399; }
+    .toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #f87171; }
+
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -217,6 +259,9 @@
     <header>
       <a href="/main">&#8592; Back to Main</a>
       <h1>📋 Task History</h1>
+      <button class="btn-refresh" id="refreshBtn" onclick="refreshHistory()">
+        <span id="refreshIcon">🔄</span> Refresh
+      </button>
     </header>
 
     <!-- Stats -->
@@ -258,6 +303,8 @@
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
     let allEvents = [];
     let activeFilter = 'ALL';
@@ -266,9 +313,11 @@
       return new Date(iso).toLocaleString();
     }
 
-    function actionLabel(action) {
-      const map = { CREATED: '➕ Created', UPDATED: '✏️ Updated', DELETED: '🗑 Deleted' };
-      return map[action] || action;
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.className = 'toast', 3000);
     }
 
     function render() {
@@ -330,6 +379,27 @@
       }
     }
 
+    // ── Refresh ────────────────────────────────────────────
+    async function refreshHistory() {
+      const btn  = document.getElementById('refreshBtn');
+      const icon = document.getElementById('refreshIcon');
+      btn.disabled = true;
+      icon.classList.add('spinning');
+      try {
+        const res = await fetch('/api/history');
+        if (!res.ok) throw new Error();
+        allEvents = await res.json();
+        updateStats();
+        render();
+        showToast('✅ History refreshed', 'success');
+      } catch {
+        showToast('❌ Failed to refresh', 'error');
+      } finally {
+        btn.disabled = false;
+        icon.classList.remove('spinning');
+      }
+    }
+
     // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -350,6 +420,7 @@
       allEvents = [];
       updateStats();
       render();
+      showToast('🗑️ History cleared', 'success');
     });
 
     load();
