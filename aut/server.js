@@ -5,9 +5,10 @@ const logger = require('./logger');
 
 const app = express();
 const port = 3000;
-const TASKS_FILE = path.join(__dirname, 'data', 'tasks.json');
+const TASKS_FILE   = path.join(__dirname, 'data', 'tasks.json');
+const HISTORY_FILE = path.join(__dirname, 'data', 'history.json');
 
-// Ensure data directory and tasks file exist on startup
+// Ensure data directory and files exist on startup
 if (!fs.existsSync(path.join(__dirname, 'data'))) {
   fs.mkdirSync(path.join(__dirname, 'data'));
 }
@@ -15,15 +16,41 @@ if (!fs.existsSync(TASKS_FILE)) {
   fs.writeFileSync(TASKS_FILE, '[]');
   logger.info('Created empty tasks.json');
 }
+if (!fs.existsSync(HISTORY_FILE)) {
+  fs.writeFileSync(HISTORY_FILE, '[]');
+  logger.info('Created empty history.json');
+}
 
-// Helpers
+// ── Helpers ────────────────────────────────────────────────
+
 function readTasks() {
-  const raw = fs.readFileSync(TASKS_FILE, 'utf-8');
-  return JSON.parse(raw);
+  return JSON.parse(fs.readFileSync(TASKS_FILE, 'utf-8'));
 }
 
 function writeTasks(tasks) {
   fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2));
+}
+
+function readHistory() {
+  return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+}
+
+function writeHistory(history) {
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+}
+
+function addHistoryEntry(action, task) {
+  const history = readHistory();
+  history.push({
+    id: Date.now(),
+    action,                        // 'CREATED' | 'UPDATED' | 'DELETED'
+    taskId: task.id,
+    taskName: task.name,
+    taskDescription: task.description,
+    timestamp: new Date().toISOString(),
+  });
+  writeHistory(history);
+  logger.info(`[HISTORY] action=${action} taskId=${task.id} name="${task.name}"`);
 }
 
 app.use(express.json());
@@ -73,8 +100,6 @@ app.get('/main/api-examples', (req, res) => {
 
 // ── Logs API ───────────────────────────────────────────────
 
-// GET /api/logs — returns all log entries as JSON array
-// Each entry: { timestamp, level, message }
 app.get('/api/logs', (req, res) => {
   try {
     const LOG_FILE = path.join(__dirname, 'logs', 'combined.log');
@@ -98,7 +123,6 @@ app.get('/api/logs', (req, res) => {
   }
 });
 
-// DELETE /api/logs — clears all log files
 app.delete('/api/logs', (req, res) => {
   try {
     const LOG_FILE = path.join(__dirname, 'logs', 'combined.log');
@@ -113,7 +137,6 @@ app.delete('/api/logs', (req, res) => {
   }
 });
 
-// GET /api/logs/raw — returns the raw log file as plain text
 app.get('/api/logs/raw', (req, res) => {
   try {
     const LOG_FILE = path.join(__dirname, 'logs', 'combined.log');
@@ -123,6 +146,31 @@ app.get('/api/logs/raw', (req, res) => {
   } catch (err) {
     logger.error(`Failed to read logs: ${err.message}`);
     res.status(500).type('text').send('Failed to read logs');
+  }
+});
+
+// ── History API ────────────────────────────────────────────
+
+// GET /api/history — returns all history events
+app.get('/api/history', (req, res) => {
+  try {
+    const history = readHistory();
+    res.json(history);
+  } catch (err) {
+    logger.error(`Failed to read history: ${err.message}`);
+    res.status(500).json({ error: 'Failed to read history' });
+  }
+});
+
+// DELETE /api/history — clears all history events
+app.delete('/api/history', (req, res) => {
+  try {
+    writeHistory([]);
+    logger.info('History cleared');
+    res.json({ message: 'History cleared' });
+  } catch (err) {
+    logger.error(`Failed to clear history: ${err.message}`);
+    res.status(500).json({ error: 'Failed to clear history' });
   }
 });
 
@@ -159,6 +207,7 @@ app.post('/api/tasks', (req, res) => {
     };
     tasks.push(newTask);
     writeTasks(tasks);
+    addHistoryEntry('CREATED', newTask);
     logger.info(`[TASK ADDED] name="${name}" id=${newTask.id}`);
     res.status(201).json(newTask);
   } catch (err) {
@@ -177,6 +226,7 @@ app.put('/api/tasks/:id', (req, res) => {
     if (idx === -1) return res.status(404).json({ error: 'Task not found' });
     tasks[idx] = { ...tasks[idx], name, description, updatedAt: new Date().toISOString() };
     writeTasks(tasks);
+    addHistoryEntry('UPDATED', tasks[idx]);
     logger.info(`[TASK UPDATED] name="${tasks[idx].name}" id=${id}`);
     res.json(tasks[idx]);
   } catch (err) {
@@ -194,6 +244,7 @@ app.delete('/api/tasks/:id', (req, res) => {
     if (idx === -1) return res.status(404).json({ error: 'Task not found' });
     const [deleted] = tasks.splice(idx, 1);
     writeTasks(tasks);
+    addHistoryEntry('DELETED', deleted);
     logger.info(`[TASK DELETED] name="${deleted.name}" id=${id}`);
     res.json({ message: 'Task deleted', task: deleted });
   } catch (err) {
@@ -204,19 +255,16 @@ app.delete('/api/tasks/:id', (req, res) => {
 
 // ── Error routes ───────────────────────────────────────────
 
-// Example error route
 app.get('/error', (req, res) => {
   logger.error('Something went wrong on /error route');
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// 404 handler
 app.use((req, res) => {
   logger.warn(`404 - Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   logger.error(`Unhandled error: ${err.message}`);
   res.status(500).json({ error: 'Internal Server Error' });
