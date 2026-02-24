@@ -195,8 +195,8 @@ app.post('/api/tasks', (req, res) => {
       return res.status(400).json({ error: 'Name and description are required' });
     }
     const tasks = readTasks();
-    if (tasks.length >= 499) {
-      return res.status(400).json({ error: 'Cannot exceed 499 tasks' });
+    if (tasks.length >= 3000) {
+      return res.status(400).json({ error: 'Cannot exceed 3000 tasks' });
     }
     const newTask = {
       id: Date.now(),
