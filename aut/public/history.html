@@ -43,12 +43,14 @@
       background-clip: text;
     }
 
-    .container { max-width: 800px; margin: 0 auto; }
+    .container { max-width: 860px; margin: 0 auto; }
 
+    /* Stats */
     .stats {
       display: flex;
       gap: 16px;
       margin-bottom: 28px;
+      flex-wrap: wrap;
     }
 
     .stat-card {
@@ -57,31 +59,46 @@
       border-radius: 12px;
       padding: 16px 24px;
       flex: 1;
+      min-width: 120px;
       text-align: center;
     }
 
     .stat-card .num {
       font-size: 2rem;
       font-weight: 800;
-      color: #a78bfa;
     }
 
     .stat-card .label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: rgba(255,255,255,0.4);
       text-transform: uppercase;
       letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .num-total   { color: #a78bfa; }
+    .num-created { color: #68d391; }
+    .num-updated { color: #63b3ed; }
+    .num-deleted { color: #fc8181; }
+
+    /* Filters */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
     .search-bar {
-      width: 100%;
-      padding: 12px 18px;
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 16px;
       border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.15);
       background: rgba(255,255,255,0.05);
       color: #e2e8f0;
-      font-size: 0.95rem;
-      margin-bottom: 20px;
+      font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -89,44 +106,96 @@
     .search-bar:focus { border-color: #a78bfa; }
     .search-bar::placeholder { color: rgba(255,255,255,0.3); }
 
-    .task-list { display: flex; flex-direction: column; gap: 14px; }
-
-    .task-card {
+    .filter-btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px;
-      padding: 20px 24px;
-      transition: border-color 0.2s, transform 0.2s;
-      animation: slideIn 0.3s ease;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .task-card:hover {
-      border-color: #a78bfa;
-      transform: translateY(-2px);
+    .filter-btn:hover { border-color: #a78bfa; color: #e2e8f0; }
+    .filter-btn.active { background: rgba(167,139,250,0.2); border-color: #a78bfa; color: #e2e8f0; }
+
+    .clear-btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(252,129,129,0.3);
+      background: rgba(252,129,129,0.08);
+      color: #fc8181;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: auto;
     }
 
-    .task-card .task-name {
-      font-size: 1.1rem;
+    .clear-btn:hover { background: rgba(252,129,129,0.18); border-color: #fc8181; }
+
+    /* Event list */
+    .event-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .event-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 4px solid transparent;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      animation: slideIn 0.25s ease;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .event-card:hover { transform: translateY(-2px); }
+
+    .event-card.CREATED { border-left-color: #68d391; }
+    .event-card.UPDATED { border-left-color: #63b3ed; }
+    .event-card.DELETED { border-left-color: #fc8181; }
+
+    .event-badge {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .badge-CREATED { background: rgba(104,211,145,0.15); color: #68d391; }
+    .badge-UPDATED { background: rgba(99,179,237,0.15);  color: #63b3ed; }
+    .badge-DELETED { background: rgba(252,129,129,0.15); color: #fc8181; }
+
+    .event-body { flex: 1; }
+
+    .event-name {
+      font-size: 1rem;
       font-weight: 700;
       color: #e2e8f0;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    .task-card .task-desc {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 12px;
-      line-height: 1.5;
+    .event-desc {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 8px;
+      line-height: 1.4;
     }
 
-    .task-card .task-meta {
+    .event-meta {
+      font-size: 0.73rem;
+      color: rgba(255,255,255,0.28);
       display: flex;
-      gap: 20px;
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.3);
+      gap: 16px;
     }
-
-    .task-meta span { display: flex; align-items: center; gap: 4px; }
 
     .empty-state {
       text-align: center;
@@ -136,11 +205,9 @@
 
     .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
     .empty-state p { font-size: 1rem; }
-    .empty-state a { color: #a78bfa; text-decoration: none; }
-    .empty-state a:hover { text-decoration: underline; }
 
     @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
   </style>
@@ -152,78 +219,137 @@
       <h1>📋 Task History</h1>
     </header>
 
+    <!-- Stats -->
     <div class="stats">
       <div class="stat-card">
-        <div class="num" id="totalCount">0</div>
-        <div class="label">Total Tasks</div>
+        <div class="num num-total"  id="countTotal">0</div>
+        <div class="label">Total Events</div>
       </div>
       <div class="stat-card">
-        <div class="num" id="todayCount">0</div>
-        <div class="label">Added Today</div>
+        <div class="num num-created" id="countCreated">0</div>
+        <div class="label">Created</div>
+      </div>
+      <div class="stat-card">
+        <div class="num num-updated" id="countUpdated">0</div>
+        <div class="label">Updated</div>
+      </div>
+      <div class="stat-card">
+        <div class="num num-deleted" id="countDeleted">0</div>
+        <div class="label">Deleted</div>
       </div>
     </div>
 
-    <input class="search-bar" id="searchInput" type="text" placeholder="🔍  Search tasks by name or description..."/>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input class="search-bar" id="searchInput" type="text" placeholder="🔍  Search by task name..."/>
+      <button class="filter-btn active" data-filter="ALL">All</button>
+      <button class="filter-btn" data-filter="CREATED">Created</button>
+      <button class="filter-btn" data-filter="UPDATED">Updated</button>
+      <button class="filter-btn" data-filter="DELETED">Deleted</button>
+      <button class="clear-btn" id="clearBtn">🗑 Clear History</button>
+    </div>
 
-    <div class="task-list" id="taskList">
+    <!-- Event list -->
+    <div class="event-list" id="eventList">
       <div class="empty-state">
         <div class="icon">⏳</div>
-        <p>Loading tasks...</p>
+        <p>Loading history...</p>
       </div>
     </div>
   </div>
 
   <script>
-    let allTasks = [];
+    let allEvents = [];
+    let activeFilter = 'ALL';
 
     function formatDate(iso) {
-      const d = new Date(iso);
-      return d.toLocaleString();
+      return new Date(iso).toLocaleString();
     }
 
-    function isToday(iso) {
-      const d = new Date(iso);
-      const now = new Date();
-      return d.toDateString() === now.toDateString();
+    function actionLabel(action) {
+      const map = { CREATED: '➕ Created', UPDATED: '✏️ Updated', DELETED: '🗑 Deleted' };
+      return map[action] || action;
     }
 
-    function render(tasks) {
-      const list = document.getElementById('taskList');
-      if (tasks.length === 0) {
+    function render() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const list = document.getElementById('eventList');
+
+      let filtered = allEvents.slice().reverse();
+
+      if (activeFilter !== 'ALL') {
+        filtered = filtered.filter(e => e.action === activeFilter);
+      }
+      if (q) {
+        filtered = filtered.filter(e =>
+          e.taskName.toLowerCase().includes(q) ||
+          (e.taskDescription || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (filtered.length === 0) {
         list.innerHTML = `
           <div class="empty-state">
             <div class="icon">📭</div>
-            <p>No tasks found. <a href="/main/new-task">Add your first task →</a></p>
+            <p>No history events found.</p>
           </div>`;
         return;
       }
-      list.innerHTML = tasks.slice().reverse().map(t => `
-        <div class="task-card">
-          <div class="task-name">${t.name}</div>
-          <div class="task-desc">${t.description}</div>
-          <div class="task-meta">
-            <span>🕐 Created: ${formatDate(t.createdAt)}</span>
-            <span>✏️ Updated: ${formatDate(t.updatedAt)}</span>
+
+      list.innerHTML = filtered.map(e => `
+        <div class="event-card ${e.action}">
+          <span class="event-badge badge-${e.action}">${e.action}</span>
+          <div class="event-body">
+            <div class="event-name">${e.taskName}</div>
+            <div class="event-desc">${e.taskDescription || '—'}</div>
+            <div class="event-meta">
+              <span>🕐 ${formatDate(e.timestamp)}</span>
+              <span>🆔 Task ID: ${e.taskId}</span>
+            </div>
           </div>
         </div>
       `).join('');
     }
 
+    function updateStats() {
+      document.getElementById('countTotal').textContent   = allEvents.length;
+      document.getElementById('countCreated').textContent = allEvents.filter(e => e.action === 'CREATED').length;
+      document.getElementById('countUpdated').textContent = allEvents.filter(e => e.action === 'UPDATED').length;
+      document.getElementById('countDeleted').textContent = allEvents.filter(e => e.action === 'DELETED').length;
+    }
+
     async function load() {
       try {
-        const res = await fetch('/api/tasks');
-        allTasks = await res.json();
-        document.getElementById('totalCount').textContent = allTasks.length;
-        document.getElementById('todayCount').textContent = allTasks.filter(t => isToday(t.createdAt)).length;
-        render(allTasks);
+        const res = await fetch('/api/history');
+        allEvents = await res.json();
+        updateStats();
+        render();
       } catch (e) {
-        document.getElementById('taskList').innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Failed to load tasks.</p></div>`;
+        document.getElementById('eventList').innerHTML =
+          `<div class="empty-state"><div class="icon">❌</div><p>Failed to load history.</p></div>`;
       }
     }
 
-    document.getElementById('searchInput').addEventListener('input', e => {
-      const q = e.target.value.toLowerCase();
-      render(allTasks.filter(t => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q)));
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        render();
+      });
+    });
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', render);
+
+    // Clear history
+    document.getElementById('clearBtn').addEventListener('click', async () => {
+      if (!confirm('Clear all history events? This cannot be undone.')) return;
+      await fetch('/api/history', { method: 'DELETE' });
+      allEvents = [];
+      updateStats();
+      render();
     });
 
     load();
