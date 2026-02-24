@@ -132,6 +132,9 @@ app.get('/api/logs/raw', (req, res) => {
 app.get('/api/tasks', (req, res) => {
   try {
     const tasks = readTasks();
+    if(tasks.length > 1000){
+        res.status(400).json({ error: 'Cannot exceed 1000 tasks' });
+    }
     res.json(tasks);
   } catch (err) {
     logger.error(`Failed to read tasks: ${err.message}`);
