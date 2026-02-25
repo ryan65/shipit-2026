@@ -7,7 +7,7 @@ const logger = require('./logger');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { maxTasks: 3000 };
+  const opts = { maxTasks: 3990 };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--maxTasks') {
