@@ -176,6 +176,8 @@ const GetUserSchema = z.object({
 
 const TasksAutLogsSchema = z.object({
   last: z.number().optional().describe("Return only the last N log entries"),
+  from: z.number().optional().describe("Return log entries starting from this index (0-based)"),
+  to: z.number().optional().describe("Return log entries up to this index (0-based, inclusive)"),
 });
 
 // ─── Tool Definitions ─────────────────────────────────────────────────────────
@@ -553,6 +555,8 @@ const TOOLS: Tool[] = [
       type: "object",
       properties: {
         last: { type: "number", description: "Return only the last N log entries" },
+        from: { type: "number", description: "Return log entries starting from this index (0-based)" },
+        to: { type: "number", description: "Return log entries up to this index (0-based, inclusive)" },
       },
     },
   },
@@ -1068,11 +1072,17 @@ async function handleGetUser(args: unknown) {
 }
 
 async function handleTasksAutLogs(args: unknown) {
-  const { last } = TasksAutLogsSchema.parse(args);
+  const { last, from, to } = TasksAutLogsSchema.parse(args);
   const baseUrl = process.env.AUT_BASE_URL ?? "http://localhost:3000";
   const url = new URL("/api/logs", baseUrl);
   if (last !== undefined) {
     url.searchParams.set("last", String(last));
+  }
+  if (from !== undefined) {
+    url.searchParams.set("from", String(from));
+  }
+  if (to !== undefined) {
+    url.searchParams.set("to", String(to));
   }
   const response = await fetch(url.toString());
   if (!response.ok) {
