@@ -3,6 +3,31 @@ const path = require('path');
 const fs = require('fs');
 const logger = require('./logger');
 
+// ── CLI options ────────────────────────────────────────────
+
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const opts = { maxTasks: 3000 };
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--maxTasks') {
+      const val = parseInt(args[i + 1], 10);
+      if (isNaN(val) || val < 1) {
+        console.error('Error: --maxTasks must be a positive integer');
+        process.exit(1);
+      }
+      opts.maxTasks = val;
+      i++;
+    }
+  }
+
+  return opts;
+}
+
+const { maxTasks } = parseArgs();
+
+// ── App setup ──────────────────────────────────────────────
+
 const app = express();
 const port = 3000;
 const TASKS_FILE   = path.join(__dirname, 'data', 'tasks.json');
@@ -195,8 +220,8 @@ app.post('/api/tasks', (req, res) => {
       return res.status(400).json({ error: 'Name and description are required' });
     }
     const tasks = readTasks();
-    if (tasks.length >= 3000) {
-      return res.status(400).json({ error: 'Exceeded the maximum number of tasks allowed. Please increase limit or delete tasks' });
+    if (tasks.length >= maxTasks) {
+      return res.status(400).json({ error: `Exceeded the maximum number of tasks allowed (${maxTasks}). Please increase limit or delete tasks` });
     }
     const newTask = {
       id: Date.now(),
@@ -302,4 +327,5 @@ app.use((err, req, res, next) => {
 
 app.listen(port, () => {
   logger.info(`Server running at http://localhost:${port}`);
+  logger.info(`Max tasks limit: ${maxTasks}`);
 });
