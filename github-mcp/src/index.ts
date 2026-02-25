@@ -174,6 +174,10 @@ const GetUserSchema = z.object({
   username: z.string().optional().describe("GitHub username (default: authenticated user)"),
 });
 
+const TasksAutLogsSchema = z.object({
+  last: z.number().optional().describe("Return only the last N log entries"),
+});
+
 // ─── Tool Definitions ─────────────────────────────────────────────────────────
 
 const TOOLS: Tool[] = [
@@ -538,6 +542,17 @@ const TOOLS: Tool[] = [
       type: "object",
       properties: {
         username: { type: "string" },
+      },
+    },
+  },
+  // AUT
+  {
+    name: "tasksAutLogs",
+    description: "Get logs from the AUT task management server",
+    inputSchema: {
+      type: "object",
+      properties: {
+        last: { type: "number", description: "Return only the last N log entries" },
       },
     },
   },
@@ -1052,6 +1067,20 @@ async function handleGetUser(args: unknown) {
   }
 }
 
+async function handleTasksAutLogs(args: unknown) {
+  const { last } = TasksAutLogsSchema.parse(args);
+  const baseUrl = process.env.AUT_BASE_URL ?? "http://localhost:3000";
+  const url = new URL("/api/logs", baseUrl);
+  if (last !== undefined) {
+    url.searchParams.set("last", String(last));
+  }
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`AUT logs API returned ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 // ─── Tool Router ──────────────────────────────────────────────────────────────
 
 async function callTool(name: string, args: unknown): Promise<unknown> {
@@ -1080,6 +1109,7 @@ async function callTool(name: string, args: unknown): Promise<unknown> {
     case "search_code":             return handleSearchCode(args);
     case "search_repositories":     return handleSearchRepositories(args);
     case "get_user":                return handleGetUser(args);
+    case "tasksAutLogs":            return handleTasksAutLogs(args);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
