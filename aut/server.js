@@ -251,6 +251,7 @@ app.post('/api/tasks', (req, res) => {
     }
     const tasks = readTasks();
     if (tasks.length >= maxTasks) {
+     logger.error(`Cannot create task "${name}". Maximum limit of ${maxTasks} tasks reached.`);
       return res.status(400).json({ error: `Exceeded the maximum number of tasks allowed (${maxTasks}). Please increase limit or delete tasks` });
     }
     const newTask = {
