@@ -71,8 +71,13 @@
     }
 
     .task-count {
-      font-size: 0.82rem;
-      color: rgba(255,255,255,0.35);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      background: rgba(99,179,237,0.12);
+      border: 1px solid rgba(99,179,237,0.25);
+      border-radius: 20px;
+      padding: 5px 14px;
     }
 
     .toolbar-right {
@@ -320,7 +325,7 @@
     </header>
 
     <div class="toolbar">
-      <span class="task-count" id="taskCount"></span>
+      <span class="task-count" id="taskCount">Total: 0 tasks</span>
       <div class="toolbar-right">
         <button class="btn-refresh" id="refreshBtn" onclick="refreshTasks()">
           <span id="refreshIcon">🔄</span> Refresh
@@ -397,9 +402,10 @@
       const deleteAllBtn = document.getElementById('deleteAllBtn');
       const taskCount = document.getElementById('taskCount');
 
+      taskCount.textContent = `Total: ${tasks.length} task${tasks.length !== 1 ? 's' : ''}`;
+
       if (tasks.length === 0) {
         deleteAllBtn.disabled = true;
-        taskCount.textContent = '';
         list.innerHTML = `
           <div class="empty-state">
             <div class="icon">📭</div>
@@ -409,7 +415,6 @@
       }
 
       deleteAllBtn.disabled = false;
-      taskCount.textContent = `${tasks.length} task${tasks.length !== 1 ? 's' : ''}`;
 
       const sorted = getSortedTasks();
       list.innerHTML = sorted.map(t => `
