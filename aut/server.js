@@ -129,9 +129,21 @@ app.get('/api/logs', (req, res) => {
   try {
     const LOG_FILE = path.join(__dirname, 'logs', 'combined.log');
     if (!fs.existsSync(LOG_FILE)) return res.json([]);
+
+    // Optional date-range filters (UTC milliseconds)
+    let from = null, to = null;
+    if (req.query.from !== undefined) {
+      from = parseInt(req.query.from, 10);
+      if (isNaN(from)) return res.status(400).json({ error: "'from' must be a UTC milliseconds integer" });
+    }
+    if (req.query.to !== undefined) {
+      to = parseInt(req.query.to, 10);
+      if (isNaN(to)) return res.status(400).json({ error: "'to' must be a UTC milliseconds integer" });
+    }
+
     const raw = fs.readFileSync(LOG_FILE, 'utf-8');
     const lineRegex = /^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \[(\w+)\]: (.+)$/;
-    const entries = raw
+    let entries = raw
       .split('\n')
       .map(l => l.replace(/\r$/, ''))
       .filter(l => l.trim())
@@ -141,6 +153,16 @@ app.get('/api/logs', (req, res) => {
         return { timestamp: m[1], level: m[2].toLowerCase(), message: m[3] };
       })
       .filter(e => e !== null);
+
+    if (from !== null || to !== null) {
+      entries = entries.filter(e => {
+        const ms = new Date(e.timestamp.replace(' ', 'T')).getTime();
+        if (from !== null && ms < from) return false;
+        if (to !== null && ms > to) return false;
+        return true;
+      });
+    }
+
     res.json(entries);
   } catch (err) {
     logger.error(`Failed to read logs: ${err.message}`);

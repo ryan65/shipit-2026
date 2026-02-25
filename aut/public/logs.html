@@ -106,15 +106,27 @@
   </div>
 
   <script>
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     async function load() {
       try {
-        const res = await fetch('/api/logs/raw');
-        const text = await res.text();
+        const res = await fetch('/api/logs');
+        const entries = await res.json();
         const output = document.getElementById('output');
-        if (!text.trim()) {
+        if (!entries.length) {
           output.innerHTML = '<div class="empty">No logs yet.</div>';
         } else {
-          output.innerHTML = '<pre>' + text + '</pre>';
+          // Reverse for descending order (latest at top)
+          const lines = entries.slice().reverse().map(e => {
+            const colour = e.level === 'error' ? '#fca5a5'
+                         : e.level === 'warn'  ? '#fcd34d'
+                         : e.level === 'debug' ? '#94a3b8'
+                         : '#cbd5e1'; // info / default
+            return `<span style="color:${colour}">[${escHtml(e.timestamp)}] [${escHtml(e.level.toUpperCase())}]: ${escHtml(e.message)}</span>`;
+          });
+          output.innerHTML = '<pre>' + lines.join('\n') + '</pre>';
         }
       } catch (e) {
         document.getElementById('output').innerHTML = '<div class="empty">Failed to load logs.</div>';
@@ -140,7 +152,7 @@
         alert('Failed to clear logs.');
       } finally {
         btn.disabled = false;
-        btn.textContent = '🗑 Clear Logs';
+        btn.textContent = '\uD83D\uDDD1 Clear Logs';
       }
     }
 
