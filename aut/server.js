@@ -131,7 +131,7 @@ app.get('/api/logs', (req, res) => {
     if (!fs.existsSync(LOG_FILE)) return res.json([]);
 
     // Optional date-range filters (UTC milliseconds)
-    let from = null, to = null;
+    let from = null, to = null, last = null;
     if (req.query.from !== undefined) {
       from = parseInt(req.query.from, 10);
       if (isNaN(from)) return res.status(400).json({ error: "'from' must be a UTC milliseconds integer" });
@@ -139,6 +139,10 @@ app.get('/api/logs', (req, res) => {
     if (req.query.to !== undefined) {
       to = parseInt(req.query.to, 10);
       if (isNaN(to)) return res.status(400).json({ error: "'to' must be a UTC milliseconds integer" });
+    }
+    if (req.query.last !== undefined) {
+      last = parseInt(req.query.last, 10);
+      if (isNaN(last) || last < 1) return res.status(400).json({ error: "'last' must be a positive integer" });
     }
 
     const raw = fs.readFileSync(LOG_FILE, 'utf-8');
@@ -161,6 +165,10 @@ app.get('/api/logs', (req, res) => {
         if (to !== null && ms > to) return false;
         return true;
       });
+    }
+
+    if (last !== null) {
+      entries = entries.slice(-last);
     }
 
     res.json(entries);
