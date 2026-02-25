@@ -196,7 +196,7 @@ app.post('/api/tasks', (req, res) => {
     }
     const tasks = readTasks();
     if (tasks.length >= 3000) {
-      return res.status(400).json({ error: 'Cannot exceed 3000 tasks' });
+      return res.status(400).json({ error: 'Exceeded the maximum number of tasks allowed. Please increase limit or delete tasks' });
     }
     const newTask = {
       id: Date.now(),
