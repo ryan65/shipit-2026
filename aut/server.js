@@ -7,7 +7,7 @@ const logger = require('./logger');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { maxTasks: 3990, perfMode: false, perfFixed: false };
+  const opts = { maxTasks: 3990 };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--maxTasks') {
@@ -18,17 +18,12 @@ function parseArgs() {
       }
       opts.maxTasks = val;
       i++;
-    } else if (args[i] === '--perf') {
-      opts.perfMode = true;
-    } else if (args[i] === '--perfFixed') {
-      opts.perfFixed = true;
     }
   }
 
   return opts;
 }
 
-const { maxTasks, perfMode, perfFixed } = parseArgs();
 
 // ── App setup ──────────────────────────────────────────────
 
@@ -50,11 +45,6 @@ if (!fs.existsSync(HISTORY_FILE)) {
   logger.info('Created empty history.json');
 }
 
-// ── Perf-mode helpers ──────────────────────────────────────
-
-// Checks whether a task name already exists.
-// Builds a deduplicated name index first, then searches it.
-// NOTE: O(n²) — uses nested loops instead of a Set.
 function hasDuplicateName(tasks, name) {
   const seen = [];
   for (let i = 0; i < tasks.length; i++) {
@@ -390,8 +380,4 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   logger.info(`Server running at http://localhost:${port}`);
   logger.info(`Max tasks limit: ${maxTasks}`);
-  if(perfMode){
-    logger.info('Running with perfMode:true ');
-  }else{
-    logger.info('Performance mode: OFF');}
 });
