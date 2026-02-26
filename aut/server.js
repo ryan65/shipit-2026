@@ -23,7 +23,7 @@ function parseArgs() {
 
   return opts;
 }
-
+const { maxTask} = parseArgs();
 
 // ── App setup ──────────────────────────────────────────────
 
