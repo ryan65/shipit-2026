@@ -71,6 +71,19 @@
     .clear-btn:hover { background: rgba(248,113,113,0.22); border-color: rgba(248,113,113,0.7); }
     .clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    .sort-btn {
+      padding: 6px 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(167,139,250,0.4);
+      background: rgba(167,139,250,0.1);
+      color: #a78bfa;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sort-btn:hover { background: rgba(167,139,250,0.22); border-color: rgba(167,139,250,0.7); }
+
     pre {
       background: rgba(0,0,0,0.4);
       border: 1px solid rgba(255,255,255,0.1);
@@ -98,6 +111,7 @@
       <a href="/main">&#8592; Back to Main</a>
       <h1>📄 Logs</h1>
       <div class="header-actions">
+        <button class="sort-btn" id="sortBtn" onclick="toggleSort()">⬇ Newest First</button>
         <button class="refresh-btn" id="refreshBtn" onclick="refresh()">🔄 Refresh</button>
         <button class="clear-btn" id="clearBtn" onclick="clearLogs()">🗑 Clear Logs</button>
       </div>
@@ -106,6 +120,15 @@
   </div>
 
   <script>
+    let sortOrder = 'desc'; // 'desc' = newest first (default), 'asc' = oldest first
+
+    function toggleSort() {
+      sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+      const btn = document.getElementById('sortBtn');
+      btn.textContent = sortOrder === 'desc' ? '⬇ Newest First' : '⬆ Oldest First';
+      load();
+    }
+
     function escHtml(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
@@ -118,8 +141,8 @@
         if (!entries.length) {
           output.innerHTML = '<div class="empty">No logs yet.</div>';
         } else {
-          // Reverse for descending order (latest at top)
-          const lines = entries.slice().reverse().map(e => {
+          const sorted = sortOrder === 'desc' ? entries.slice().reverse() : entries.slice();
+          const lines = sorted.map(e => {
             const colour = e.level === 'error' ? '#fca5a5'
                          : e.level === 'warn'  ? '#fcd34d'
                          : e.level === 'debug' ? '#94a3b8'
