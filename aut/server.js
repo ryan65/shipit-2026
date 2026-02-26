@@ -46,8 +46,8 @@ if (!fs.existsSync(HISTORY_FILE)) {
 }
 
 // ── In-memory store (loaded once at startup) ───────────────
-let tasksCache = {};
-let historyCache = {};
+let tasksCache = [];
+let historyCache = [];
 try{
     tasksCache = JSON.parse(fs.readFileSync(TASKS_FILE,   'utf-8'));
     historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
