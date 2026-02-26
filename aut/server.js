@@ -399,5 +399,8 @@ app.listen(port, () => {
   logger.info(`Max tasks limit: ${maxTasks}`);
   if(perfMode){
     logger.info('Performance mode: ON (using inefficient duplicate name check)');
-  }
+  }else if(perfFixed){
+    logger.info('Performance mode: FIXED (using efficient duplicate name check)');
+  }else{
+    logger.info('Performance mode: OFF');}
 });
