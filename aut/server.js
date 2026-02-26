@@ -51,7 +51,7 @@ let historyCache = {};
 try{
     tasksCache = JSON.parse(fs.readFileSync(TASKS_FILE,   'utf-8'));
     historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
-}catch(){
+}catch(err){
     logger.error('Failed to load tasks or history from disk. Starting with empty data.');
 }
 
