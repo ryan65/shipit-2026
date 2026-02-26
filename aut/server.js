@@ -73,12 +73,6 @@ function hasDuplicateName(tasks, name) {
   return false;
 }
 
-// Fixed version — O(n) using a Set.
-function hasDuplicateNameFixed(tasks, name) {
-  const seen = new Set(tasks.map(t => t.name.toLowerCase()));
-  return seen.has(name.toLowerCase());
-}
-
 // ── Helpers ────────────────────────────────────────────────
 
 function readTasks() {
@@ -287,8 +281,7 @@ app.post('/api/tasks', (req, res) => {
      logger.error(`Cannot create task "${name}". Maximum limit of ${maxTasks} tasks reached.`);
       return res.status(400).json({ error: `Exceeded the maximum number of tasks allowed (${maxTasks}). Please increase limit or delete tasks` });
     }
-    if ((perfMode && hasDuplicateName(tasks, name)) ||
-        (perfFixed && hasDuplicateNameFixed(tasks, name))) {
+    if (hasDuplicateName(tasks, name)) {
       const suffix = Math.random().toString(36).slice(2, 6);
       name = `${name}_${suffix}`;
     }
@@ -398,9 +391,7 @@ app.listen(port, () => {
   logger.info(`Server running at http://localhost:${port}`);
   logger.info(`Max tasks limit: ${maxTasks}`);
   if(perfMode){
-    logger.info('Performance mode: ON (using inefficient duplicate name check)');
-  }else if(perfFixed){
-    logger.info('Performance mode: FIXED (using efficient duplicate name check)');
+    logger.info('Running with perfMode:true ');
   }else{
     logger.info('Performance mode: OFF');}
 });
