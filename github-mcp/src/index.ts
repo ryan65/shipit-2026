@@ -176,8 +176,8 @@ const GetUserSchema = z.object({
 
 const TasksAutLogsSchema = z.object({
   last: z.number().optional().describe("Return only the last N log entries"),
-  from: z.number().optional().describe("Return log entries starting from this index (0-based)"),
-  to: z.number().optional().describe("Return log entries up to this index (0-based, inclusive)"),
+  from: z.number().optional().describe("Return log entries starting this unix epoch timestamp (in milliseconds)"),
+  to: z.number().optional().describe("Return log entries up to this unix epoch timestamp (in milliseconds)"),
 });
 
 // ─── Tool Definitions ─────────────────────────────────────────────────────────
