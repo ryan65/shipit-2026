@@ -7,7 +7,7 @@ const logger = require('./logger');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { maxTasks: 3990, perfMode: false };
+  const opts = { maxTasks: 3990, perfMode: false, perfFixed: false };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--maxTasks') {
@@ -20,13 +20,15 @@ function parseArgs() {
       i++;
     } else if (args[i] === '--perf') {
       opts.perfMode = true;
+    } else if (args[i] === '--perfFixed') {
+      opts.perfFixed = true;
     }
   }
 
   return opts;
 }
 
-const { maxTasks, perfMode } = parseArgs();
+const { maxTasks, perfMode, perfFixed } = parseArgs();
 
 // ── App setup ──────────────────────────────────────────────
 
@@ -285,7 +287,8 @@ app.post('/api/tasks', (req, res) => {
      logger.error(`Cannot create task "${name}". Maximum limit of ${maxTasks} tasks reached.`);
       return res.status(400).json({ error: `Exceeded the maximum number of tasks allowed (${maxTasks}). Please increase limit or delete tasks` });
     }
-    if (perfMode ? hasDuplicateName(tasks, name) : hasDuplicateNameFixed(tasks, name)) {
+    if ((perfMode && hasDuplicateName(tasks, name)) ||
+        (perfFixed && hasDuplicateNameFixed(tasks, name))) {
       const suffix = Math.random().toString(36).slice(2, 6);
       name = `${name}_${suffix}`;
     }
