@@ -7,7 +7,7 @@ const logger = require('./logger');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { maxTasks: 3990 };
+  const opts = { maxTasks: 3990, perfMode: false };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--maxTasks') {
@@ -18,13 +18,15 @@ function parseArgs() {
       }
       opts.maxTasks = val;
       i++;
+    } else if (args[i] === '--perf') {
+      opts.perfMode = true;
     }
   }
 
   return opts;
 }
 
-const { maxTasks } = parseArgs();
+const { maxTasks, perfMode } = parseArgs();
 
 // ── App setup ──────────────────────────────────────────────
 
@@ -44,6 +46,29 @@ if (!fs.existsSync(TASKS_FILE)) {
 if (!fs.existsSync(HISTORY_FILE)) {
   fs.writeFileSync(HISTORY_FILE, '[]');
   logger.info('Created empty history.json');
+}
+
+// ── Perf-mode helpers ──────────────────────────────────────
+
+// Checks whether a task name already exists.
+// Builds a deduplicated name index first, then searches it.
+// NOTE: O(n²) — uses nested loops instead of a Set.
+function hasDuplicateName(tasks, name) {
+  const seen = [];
+  for (let i = 0; i < tasks.length; i++) {
+    let alreadyInSeen = false;
+    for (let j = 0; j < seen.length; j++) {
+      if (seen[j] === tasks[i].name.toLowerCase()) {
+        alreadyInSeen = true;
+        break;
+      }
+    }
+    if (!alreadyInSeen) seen.push(tasks[i].name.toLowerCase());
+  }
+  for (let k = 0; k < seen.length; k++) {
+    if (seen[k] === name.toLowerCase()) return true;
+  }
+  return false;
 }
 
 // ── Helpers ────────────────────────────────────────────────
@@ -245,7 +270,7 @@ app.get('/api/tasks', (req, res) => {
 // POST new task
 app.post('/api/tasks', (req, res) => {
   try {
-    const { name, description } = req.body;
+    let { name, description } = req.body;
     if (!name || !description) {
       return res.status(400).json({ error: 'Name and description are required' });
     }
@@ -253,6 +278,10 @@ app.post('/api/tasks', (req, res) => {
     if (tasks.length >= maxTasks) {
      logger.error(`Cannot create task "${name}". Maximum limit of ${maxTasks} tasks reached.`);
       return res.status(400).json({ error: `Exceeded the maximum number of tasks allowed (${maxTasks}). Please increase limit or delete tasks` });
+    }
+    if (perfMode && hasDuplicateName(tasks, name)) {
+      const suffix = Math.random().toString(36).slice(2, 6);
+      name = `${name}_${suffix}`;
     }
     const newTask = {
       id: Date.now(),
