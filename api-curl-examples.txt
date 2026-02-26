@@ -1,6 +1,6 @@
 ==============================================================
   Ship It 2026 — API curl examples
-  Base URL: http://13.39.81.47:3000
+  Base URL: http://51.44.4.67:3000
 ==============================================================
 
 
@@ -9,23 +9,23 @@
 ──────────────────────────────────────────────────────────────
 
 # Get all tasks
-curl http://13.39.81.47:3000/api/tasks
+curl http://51.44.4.67:3000/api/tasks
 
 # Create a new task
-curl -X POST http://13.39.81.47:3000/api/tasks \
+curl -X POST http://51.44.4.67:3000/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"name":"My Task","description":"Task description"}'
 
 # Update a task  (replace 1234567890 with real task ID)
-curl -X PUT http://13.39.81.47:3000/api/tasks/1234567890 \
+curl -X PUT http://51.44.4.67:3000/api/tasks/1234567890 \
   -H "Content-Type: application/json" \
   -d '{"name":"Updated Name","description":"Updated description"}'
 
 # Delete a single task  (replace 1234567890 with real task ID)
-curl -X DELETE http://13.39.81.47:3000/api/tasks/1234567890
+curl -X DELETE http://51.44.4.67:3000/api/tasks/1234567890
 
 # Delete ALL tasks
-curl -X DELETE http://13.39.81.47:3000/api/tasks
+curl -X DELETE http://51.44.4.67:3000/api/tasks
 
 
 ──────────────────────────────────────────────────────────────
@@ -33,22 +33,22 @@ curl -X DELETE http://13.39.81.47:3000/api/tasks
 ──────────────────────────────────────────────────────────────
 
 # Get all logs as JSON
-curl http://13.39.81.47:3000/api/logs
+curl http://51.44.4.67:3000/api/logs
 
 # Get last N log entries  (replace 50 with desired count)
-curl "http://13.39.81.47:3000/api/logs?last=50"
+curl "http://51.44.4.67:3000/api/logs?last=50"
 
 # Get logs in a date range  (UTC milliseconds)
-curl "http://13.39.81.47:3000/api/logs?from=1700000000000&to=1700099999000"
+curl "http://51.44.4.67:3000/api/logs?from=1700000000000&to=1700099999000"
 
 # Get logs from a date onwards
-curl "http://13.39.81.47:3000/api/logs?from=1700000000000"
+curl "http://51.44.4.67:3000/api/logs?from=1700000000000"
 
 # Get raw log file as plain text
-curl http://13.39.81.47:3000/api/logs/raw
+curl http://51.44.4.67:3000/api/logs/raw
 
 # Clear all logs
-curl -X DELETE http://13.39.81.47:3000/api/logs
+curl -X DELETE http://51.44.4.67:3000/api/logs
 
 
 ──────────────────────────────────────────────────────────────
@@ -56,10 +56,10 @@ curl -X DELETE http://13.39.81.47:3000/api/logs
 ──────────────────────────────────────────────────────────────
 
 # Get all history events
-curl http://13.39.81.47:3000/api/history
+curl http://51.44.4.67:3000/api/history
 
 # Clear all history
-curl -X DELETE http://13.39.81.47:3000/api/history
+curl -X DELETE http://51.44.4.67:3000/api/history
 
 
 ==============================================================

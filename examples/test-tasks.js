@@ -1,5 +1,5 @@
 
-const BASE_URL = 'http://13.39.81.47:3000';
+const BASE_URL = 'http://51.44.4.67:3000';
 
 async function createTask(name, description) {
   const res = await fetch(`${BASE_URL}/api/tasks`, {
