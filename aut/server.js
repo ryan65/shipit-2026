@@ -71,6 +71,12 @@ function hasDuplicateName(tasks, name) {
   return false;
 }
 
+// Fixed version — O(n) using a Set.
+function hasDuplicateNameFixed(tasks, name) {
+  const seen = new Set(tasks.map(t => t.name.toLowerCase()));
+  return seen.has(name.toLowerCase());
+}
+
 // ── Helpers ────────────────────────────────────────────────
 
 function readTasks() {
@@ -279,7 +285,7 @@ app.post('/api/tasks', (req, res) => {
      logger.error(`Cannot create task "${name}". Maximum limit of ${maxTasks} tasks reached.`);
       return res.status(400).json({ error: `Exceeded the maximum number of tasks allowed (${maxTasks}). Please increase limit or delete tasks` });
     }
-    if (perfMode && hasDuplicateName(tasks, name)) {
+    if (perfMode ? hasDuplicateName(tasks, name) : hasDuplicateNameFixed(tasks, name)) {
       const suffix = Math.random().toString(36).slice(2, 6);
       name = `${name}_${suffix}`;
     }
