@@ -394,4 +394,7 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   logger.info(`Server running at http://localhost:${port}`);
   logger.info(`Max tasks limit: ${maxTasks}`);
+  if(perfMode){
+    logger.info('Performance mode: ON (using inefficient duplicate name check)');
+  }
 });
