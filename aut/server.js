@@ -46,8 +46,14 @@ if (!fs.existsSync(HISTORY_FILE)) {
 }
 
 // ── In-memory store (loaded once at startup) ───────────────
-let tasksCache   = JSON.parse(fs.readFileSync(TASKS_FILE,   'utf-8'));
-let historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+let tasksCache = {};
+let historyCache = {};
+try{
+    tasksCache = JSON.parse(fs.readFileSync(TASKS_FILE,   'utf-8'));
+    historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+}catch(){
+    logger.error('Failed to load tasks or history from disk. Starting with empty data.');
+}
 
 // Async write queues — each write chains onto the previous so
 // disk writes are always sequential and never block the event loop.
