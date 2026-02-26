@@ -45,6 +45,15 @@ if (!fs.existsSync(HISTORY_FILE)) {
   logger.info('Created empty history.json');
 }
 
+// ── In-memory store (loaded once at startup) ───────────────
+let tasksCache   = JSON.parse(fs.readFileSync(TASKS_FILE,   'utf-8'));
+let historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+
+// Async write queues — each write chains onto the previous so
+// disk writes are always sequential and never block the event loop.
+let tasksWriteQ   = Promise.resolve();
+let historyWriteQ = Promise.resolve();
+
 function hasDuplicateName(tasks, name) {
   const seen = [];
   for (let i = 0; i < tasks.length; i++) {
@@ -66,19 +75,27 @@ function hasDuplicateName(tasks, name) {
 // ── Helpers ────────────────────────────────────────────────
 
 function readTasks() {
-  return JSON.parse(fs.readFileSync(TASKS_FILE, 'utf-8'));
+  return tasksCache;
 }
 
 function writeTasks(tasks) {
-  fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2));
+  tasksCache = tasks;
+  const snapshot = JSON.stringify(tasks, null, 2);
+  tasksWriteQ = tasksWriteQ
+    .then(() => fs.promises.writeFile(TASKS_FILE, snapshot))
+    .catch(err => logger.error(`Failed to persist tasks: ${err.message}`));
 }
 
 function readHistory() {
-  return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+  return historyCache;
 }
 
 function writeHistory(history) {
-  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+  historyCache = history;
+  const snapshot = JSON.stringify(history, null, 2);
+  historyWriteQ = historyWriteQ
+    .then(() => fs.promises.writeFile(HISTORY_FILE, snapshot))
+    .catch(err => logger.error(`Failed to persist history: ${err.message}`));
 }
 
 function addHistoryEntry(action, task) {
