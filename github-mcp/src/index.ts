@@ -548,6 +548,7 @@ const TOOLS: Tool[] = [
     },
   },
   // AUT
+/*
   {
     name: "tasksAutLogs",
     description: "Get logs from the AUT task management server",
@@ -560,6 +561,7 @@ const TOOLS: Tool[] = [
       },
     },
   },
+*/
 ];
 
 // ─── Tool Handlers ────────────────────────────────────────────────────────────
