@@ -140,6 +140,56 @@
       text-transform: uppercase;
       color: rgba(255,255,255,0.7);
     }
+
+    /* Clear All button */
+    .danger-zone {
+      margin-top: 36px;
+    }
+
+    .btn-clear-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      color: #fca5a5;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .btn-clear-all:hover {
+      transform: translateY(-3px);
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-clear-all:active {
+      transform: translateY(0);
+    }
+
+    .btn-clear-all:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-msg {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      min-height: 1.2em;
+      transition: opacity 0.5s;
+    }
+
+    .status-msg.success { color: #6ee7b7; }
+    .status-msg.error   { color: #fca5a5; }
   </style>
 </head>
 <body>
@@ -210,9 +260,43 @@
         <span class="nav-label">API</span>
       </a>
     </nav>
+
+    <div class="danger-zone">
+      <button class="btn-clear-all" id="btnClearAll" onclick="clearAll()">
+        <span>🗑️</span>
+        <span>Clear All Data</span>
+      </button>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
   </div>
 
   <script>
+    async function clearAll() {
+      if (!confirm('This will permanently delete all tasks, logs and history. Continue?')) return;
+
+      const btn = document.getElementById('btnClearAll');
+      const msg = document.getElementById('statusMsg');
+      btn.disabled = true;
+      msg.className = 'status-msg';
+      msg.textContent = 'Clearing…';
+
+      try {
+        await Promise.all([
+          fetch('/api/tasks',   { method: 'DELETE' }),
+          fetch('/api/logs',    { method: 'DELETE' }),
+          fetch('/api/history', { method: 'DELETE' }),
+        ]);
+        msg.className = 'status-msg success';
+        msg.textContent = '✓ All data cleared';
+      } catch (err) {
+        msg.className = 'status-msg error';
+        msg.textContent = '✗ Failed to clear data';
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => { msg.textContent = ''; }, 4000);
+      }
+    }
+
     // Generate random stars
     const container = document.getElementById('stars');
     for (let i = 0; i < 120; i++) {
