@@ -9,6 +9,7 @@ function parseArgs() {
   const args = process.argv.slice(2);
   const opts = { maxTasks: 3990 };
 
+  const VALID_LEVELS = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--maxTasks') {
       const val = parseInt(args[i + 1], 10);
@@ -17,6 +18,13 @@ function parseArgs() {
         process.exit(1);
       }
       opts.maxTasks = val;
+      i++;
+    } else if (args[i] === '--logLevel') {
+      const val = args[i + 1];
+      if (!val || !VALID_LEVELS.includes(val)) {
+        console.error(`Error: --logLevel must be one of: ${VALID_LEVELS.join(', ')}`);
+        process.exit(1);
+      }
       i++;
     }
   }
@@ -138,7 +146,7 @@ function addHistoryEntry(action, task) {
     timestamp: new Date().toISOString(),
   });
   writeHistory(history);
-  logger.info(`[HISTORY] action=${action} taskId=${task.id} name="${task.name}"`);
+  //logger.info(`[HISTORY] action=${action} taskId=${task.id} name="${task.name}"`);
 }
 
 app.use(express.json());
@@ -146,7 +154,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // HTTP request logging middleware
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`);
+  logger.debug(`${req.method} ${req.url}`);
   next();
 });
 

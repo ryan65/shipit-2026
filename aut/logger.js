@@ -6,8 +6,20 @@ const logFormat = printf(({ level, message, timestamp }) => {
   return `[${timestamp}] [${level.toUpperCase()}]: ${message}`;
 });
 
+const VALID_LEVELS = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
+
+function resolveLevel() {
+  const idx = process.argv.indexOf('--logLevel');
+  if (idx !== -1) {
+    const val = process.argv[idx + 1];
+    if (val && VALID_LEVELS.includes(val)) return val;
+    console.error(`Invalid --logLevel "${val}". Valid levels: ${VALID_LEVELS.join(', ')}. Defaulting to info.`);
+  }
+  return 'info';
+}
+
 const logger = createLogger({
-  level: 'debug', // capture all levels (debug, info, error)
+  level: resolveLevel(),
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     logFormat
