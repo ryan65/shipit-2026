@@ -55,10 +55,9 @@ try{
     logger.error('Failed to load tasks or history from disk. Starting with empty data.');
 }
 
-// Async write queues — each write chains onto the previous so
-// disk writes are always sequential and never block the event loop.
-let tasksWriteQ   = Promise.resolve();
-let historyWriteQ = Promise.resolve();
+// Dirty flags — set when in-memory data changes; flushed to disk every 10s
+let tasksDirty   = false;
+let historyDirty = false;
 
 function hasDuplicateName(tasks, name) {
   const seen = [];
@@ -86,10 +85,7 @@ function readTasks() {
 
 function writeTasks(tasks) {
   tasksCache = tasks;
-  const snapshot = JSON.stringify(tasks, null, 2);
-  tasksWriteQ = tasksWriteQ
-    .then(() => fs.promises.writeFile(TASKS_FILE, snapshot))
-    .catch(err => logger.error(`Failed to persist tasks: ${err.message}`));
+  tasksDirty = true;
 }
 
 function readHistory() {
@@ -98,11 +94,38 @@ function readHistory() {
 
 function writeHistory(history) {
   historyCache = history;
-  const snapshot = JSON.stringify(history, null, 2);
-  historyWriteQ = historyWriteQ
-    .then(() => fs.promises.writeFile(HISTORY_FILE, snapshot))
-    .catch(err => logger.error(`Failed to persist history: ${err.message}`));
+  historyDirty = true;
 }
+
+async function flushToDisk() {
+  if (tasksDirty) {
+    tasksDirty = false;
+    try {
+      await fs.promises.writeFile(TASKS_FILE, JSON.stringify(tasksCache, null, 2));
+    } catch (err) {
+      logger.error(`Failed to persist tasks: ${err.message}`);
+    }
+  }
+  if (historyDirty) {
+    historyDirty = false;
+    try {
+      await fs.promises.writeFile(HISTORY_FILE, JSON.stringify(historyCache, null, 2));
+    } catch (err) {
+      logger.error(`Failed to persist history: ${err.message}`);
+    }
+  }
+}
+
+// Flush dirty data to disk every 10 seconds
+setInterval(flushToDisk, 10_000);
+
+// Ensure data is written before the process exits
+async function shutdown() {
+  await flushToDisk();
+  process.exit(0);
+}
+process.on('SIGINT',  shutdown);
+process.on('SIGTERM', shutdown);
 
 function addHistoryEntry(action, task) {
   const history = readHistory();
