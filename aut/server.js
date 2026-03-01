@@ -67,22 +67,13 @@ try{
 let tasksDirty   = false;
 let historyDirty = false;
 
+// ── FIX: O(n) duplicate-name check using a Set instead of O(n²) nested loops ──
 function hasDuplicateName(tasks, name) {
-  const seen = [];
+  const seen = new Set();
   for (let i = 0; i < tasks.length; i++) {
-    let alreadyInSeen = false;
-    for (let j = 0; j < seen.length; j++) {
-      if (seen[j] === tasks[i].name.toLowerCase()) {
-        alreadyInSeen = true;
-        break;
-      }
-    }
-    if (!alreadyInSeen) seen.push(tasks[i].name.toLowerCase());
+    seen.add(tasks[i].name.toLowerCase());
   }
-  for (let k = 0; k < seen.length; k++) {
-    if (seen[k] === name.toLowerCase()) return true;
-  }
-  return false;
+  return seen.has(name.toLowerCase());
 }
 
 // ── Helpers ────────────────────────────────────────────────
