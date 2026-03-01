@@ -117,7 +117,7 @@ async function flushToDisk() {
 }
 
 // Flush dirty data to disk every 10 seconds
-setInterval(flushToDisk, 10_000);
+setInterval(flushToDisk, 15_000);
 
 // Ensure data is written before the process exits
 async function shutdown() {
