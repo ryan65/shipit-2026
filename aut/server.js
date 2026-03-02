@@ -7,7 +7,7 @@ const logger = require('./logger');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { maxTasks: 3990 };
+  const opts = { maxTasks: 4000 };
 
   const VALID_LEVELS = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
   for (let i = 0; i < args.length; i++) {
